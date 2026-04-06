@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analsis ROI</title>
+    <style>
+        :root {
+            --bg-color: #ffff;
+            --card-bg: #1e293b;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 2.5rem;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Controles (Sliders) */
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .control-group span.val {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        input[type=range] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        /* Resultados (KPIs) */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .kpi-box {
+            background-color: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--danger);
+        }
+
+        .kpi-box.success {
+            border-left-color: var(--success);
+        }
+
+        .kpi-title {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .roi-highlight {
+            font-size: 2.5rem;
+            color: var(--success);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>Análisis de Factibilidad Financiera</h1>
+            <p>Calculadora Interactiva de ROI</p>
+            <img src="imagenes/logo_asicai.png" alt="Descripción de la imagen" width="400" height="150">
+        </div>
+
+        <div class="card">
+            <h2 style="margin-top: 0; color: #fff;">Parámetros de la Planta</h2>
+            
+            <div class="control-group">
+                <label>Volquetas por día <span class="val" id="valCamiones">50</span></label>
+                <input type="range" id="inpCamiones" min="10" max="200" step="1" value="50">
+            </div>
+
+            <div class="control-group">
+                <label>Exceso no facturado (Ton/viaje) <span class="val" id="valExceso">1.5 Ton</span></label>
+                <input type="range" id="inpExceso" min="0.1" max="5.0" step="0.1" value="1.5">
+            </div>
+
+            <div class="control-group">
+                <label>Costo promedio por Tonelada <span class="val" id="valCosto">$15</span></label>
+                <input type="range" id="inpCosto" min="5" max="100" step="1" value="15">
+            </div>
+
+            <div class="control-group">
+                <label>Días laborables por mes <span class="val" id="valDias">24</span></label>
+                <input type="range" id="inpDias" min="15" max="31" step="1" value="24">
+            </div>
+
+            <div class="control-group" style="margin-top: 30px;">
+                <label>Inversión del Sistema (CAPEX) <span class="val" id="valCapex">$31000</span></label>
+                <input type="range" id="inpCapex" min="31000" max="50000" step="100" value="8972">
+            </div>
+        </div>
+
+        <div class="card results-grid">
+            <div class="kpi-box">
+                <div class="kpi-title">Fuga de Capital Diaria</div>
+                <div class="kpi-value" id="outDiario">$0.00</div>
+            </div>
+
+            <div class="kpi-box">
+                <div class="kpi-title">Fuga de Capital Mensual</div>
+                <div class="kpi-value" id="outMensual">$0.00</div>
+            </div>
+
+            <div class="kpi-box">
+                <div class="kpi-title">Proyección de Pérdida Anual</div>
+                <div class="kpi-value" id="outAnual">$0.00</div>
+            </div>
+
+            <div class="kpi-box success" style="margin-top: 10px; background-color: rgba(16, 185, 129, 0.1);">
+                <div class="kpi-title" style="color: var(--success);">Tiempo de Recuperación de Inversión (Payback)</div>
+                <div class="kpi-value roi-highlight" id="outRoi">0 Días</div>
+                <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-muted);">El sistema se paga a sí mismo operando este número de días.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Referencias a los inputs
+        const inpCamiones = document.getElementById('inpCamiones');
+        const inpExceso = document.getElementById('inpExceso');
+        const inpCosto = document.getElementById('inpCosto');
+        const inpDias = document.getElementById('inpDias');
+        const inpCapex = document.getElementById('inpCapex');
+
+        // Referencias a las etiquetas de valor de los inputs
+        const valCamiones = document.getElementById('valCamiones');
+        const valExceso = document.getElementById('valExceso');
+        const valCosto = document.getElementById('valCosto');
+        const valDias = document.getElementById('valDias');
+        const valCapex = document.getElementById('valCapex');
+
+        // Referencias a las salidas (KPIs)
+        const outDiario = document.getElementById('outDiario');
+        const outMensual = document.getElementById('outMensual');
+        const outAnual = document.getElementById('outAnual');
+        const outRoi = document.getElementById('outRoi');
+
+        // Formateador de moneda
+        const formatter = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2
+        });
+
+        // Función principal de cálculo
+        function calcular() {
+            // Leer valores actuales
+            const camiones = parseFloat(inpCamiones.value);
+            const exceso = parseFloat(inpExceso.value);
+            const costo = parseFloat(inpCosto.value);
+            const dias = parseFloat(inpDias.value);
+            const capex = parseFloat(inpCapex.value);
+
+            // Actualizar etiquetas visuales de los sliders
+            valCamiones.innerText = camiones;
+            valExceso.innerText = exceso.toFixed(1) + ' Ton';
+            valCosto.innerText = formatter.format(costo);
+            valDias.innerText = dias;
+            valCapex.innerText = formatter.format(capex);
+
+            // Cálculos matemáticos
+            const perdidaDiaria = camiones * exceso * costo;
+            const perdidaMensual = perdidaDiaria * dias;
+            const perdidaAnual = perdidaMensual * 12;
+            const diasRoi = capex / perdidaDiaria;
+
+            // Mostrar resultados formateados
+            outDiario.innerText = formatter.format(perdidaDiaria);
+            outMensual.innerText = formatter.format(perdidaMensual);
+            outAnual.innerText = formatter.format(perdidaAnual);
+            outRoi.innerText = Math.ceil(diasRoi) + ' Días';
+
+            // Cambiar color del ROI si es mayor a 60 días (alerta)
+            if (diasRoi > 60) {
+                outRoi.style.color = '#f59e0b'; // Naranja/Amarillo
+            } else {
+                outRoi.style.color = '#10b981'; // Verde
+            }
+        }
+
+        // Escuchar cambios en los sliders para recalcular en tiempo real
+        inpCamiones.addEventListener('input', calcular);
+        inpExceso.addEventListener('input', calcular);
+        inpCosto.addEventListener('input', calcular);
+        inpDias.addEventListener('input', calcular);
+        inpCapex.addEventListener('input', calcular);
+
+        // Calcular la primera vez al cargar la página
+        calcular();
+    </script>
+</body>
+</html>
